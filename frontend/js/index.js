@@ -40,7 +40,11 @@ loginForm.addEventListener("submit", async (event) => {
       errorMessageDiv.className = "errorMessage success";
 
       setTimeout(() => {
-        window.location.href = "/dasboard/frontend/pages/EnterpriseScreen.html";
+        // Redirecionamento robusto e log para depuração
+        const redirectPath = "frontend/pages/EnterpriseScreen.html";
+        const redirectUrl = new URL(redirectPath, window.location.href).href;
+        console.log("Redirecionando para:", redirectUrl);
+        window.location.href = redirectUrl;
       }, 200);
     } else {
       errorMessageDiv.textContent = result.message;

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="../../style/global.css" />
+    <link rel="stylesheet" href="../../style/RegisterEmployeeHere.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="box">
+        <div class="errorMessage"></div>
+        <form
+          action="../../../controllers/RegisterEmployeeHere.php"
+          method="POST"
+        >
+          <input
+            type="text"
+            name="nome"
+            placeholder="Nome do funcionário"
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email do funcionário"
+            required
+          />
+          <input
+            type="password"
+            name="senha"
+            placeholder="Senha do funcionário"
+            required
+          />
+          <input
+            type="tel"
+            name="telefone"
+            placeholder="Telefone do funcionário"
+            required
+          />
+          <input
+            type="text"
+            name="enterpriseName"
+            placeholder="Nome da empresa"
+            required
+          />
+          <button type="submit">Cadastrar Funcionário</button>
+        </form>
+      </div>
+    </div>
+    <script src="../../js/EmployeeRegister.js"></script>
+  </body>
+</html>
