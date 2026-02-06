@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="../../style/global.css" />
+    <link rel="stylesheet" href="../../style/FuncionarioScreen.css" />
+    <title>Tela do Funcionário</title>
+    <style>
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 20px;
+        margin: 10px 0;
+        background: #f8f9fa;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .menu-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+      }
+      .menu-item h3 {
+        margin: 0;
+        color: #333;
+      }
+      .menu-item i {
+        font-size: 24px;
+        color: #0d6efd;
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .header h1 {
+        margin: 0 0 5px 0;
+      }
+      .header p.employee-name {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+      }
+      .logout-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 20px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .logout-btn:hover {
+        background: #c82333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Tela do Funcionário</h1>
+        <p class="employee-name" id="employeeName">Carregando...</p>
+      </div>
+
+      <a href="./RegisterSale.html">
+        <div class="menu-item">
+          <h3>Registrar Nova Venda</h3>
+          <i class="bi bi-plus-circle"></i>
+        </div>
+      </a>
+
+      <a href="./SalesHistory.html">
+        <div class="menu-item">
+          <h3>Histórico de Vendas</h3>
+          <i class="bi bi-graph-up"></i>
+        </div>
+      </a>
+
+      <div style="text-align: center">
+        <button class="logout-btn" onclick="logout()">🚪 Sair</button>
+      </div>
+    </div>
+
+    <script>
+      // Verificar autenticação ao carregar página
+      window.addEventListener("load", () => {
+        const employeeName = localStorage.getItem("funcionario_nome");
+        if (!employeeName) {
+          // Sem dados de autenticação, redirecionar para login
+          window.location.href = "../FuncionarioLogin.html";
+          return;
+        }
+        document.getElementById("employeeName").textContent =
+          "Bem-vindo, " + employeeName + "!";
+      });
+
+      async function logout() {
+        if (confirm("Tem certeza que deseja sair?")) {
+          try {
+            const response = await fetch(
+              "../../../controllers/FuncionarioLogout.php",
+              {
+                method: "POST",
+                credentials: "include",
+              },
+            );
+
+            console.log("Logout Response Status:", response.status);
+            const responseText = await response.text();
+            console.log("Logout Response Text:", responseText);
+            
+            let result;
+            try {
+              result = JSON.parse(responseText);
+            } catch (e) {
+              console.error("JSON Parse Error:", e);
+              throw new Error("Erro ao processar resposta do logout");
+            }
+
+            if (result.success) {
+              // Limpar localStorage
+              localStorage.removeItem("funcionario_nome");
+              localStorage.removeItem("funcionario_id");
+              window.location.href = "../../../index.html";
+            } else {
+              alert("Erro ao fazer logout: " + result.message);
+            }
+          } catch (err) {
+            console.error("Erro ao fazer logout:", err);
+            // Mesmo com erro, limpar localStorage e redirecionar
+            localStorage.removeItem("funcionario_nome");
+            localStorage.removeItem("funcionario_id");
+            window.location.href = "../../../index.html";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

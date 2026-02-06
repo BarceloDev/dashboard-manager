@@ -1,7 +1,10 @@
 <?php
 
 require_once __DIR__ . '/../../../config/connection.php';
-session_start();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Verifica autenticação
 if (!isset($_SESSION['usuario_id'])) {
@@ -51,7 +54,7 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 <div class="container py-4">
-    <h2>Funcionários de <?php echo htmlspecialchars($enterpriseName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+    <h2><a href="../EnterpriseScreen.html"><i class="bi bi-arrow-left"></i></a> Funcionários de <?php echo htmlspecialchars($enterpriseName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
     <div class="box" id="employees-list">
         <?php if (empty($employees)): ?>
             <div class="alert">Nenhum funcionário registrado para esta empresa.</div>
@@ -77,23 +80,39 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 async function deleteEmployee(id) {
     if (!confirm('Confirma exclusão deste funcionário?')) return;
     try {
-        const form = new URLSearchParams();
-        form.append('id', id);
-        const res = await fetch('/dashboard-manager/controllers/EmployeeDelete.php', {
+        const formData = new FormData();
+        formData.append('id', id);
+        
+        const res = await fetch('../../../controllers/EmployeeDelete.php', {
             method: 'POST',
-            body: form
+            body: formData,
+            credentials: 'include'
         });
-        const data = await res.json();
+        
+        const responseText = await res.text();
+        console.log('Delete response status:', res.status);
+        console.log('Delete response body:', responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Failed to parse JSON:', e);
+            alert('Erro ao processar resposta do servidor: ' + responseText);
+            return;
+        }
+        
         if (data.success) {
             const el = document.getElementById('employee-row-' + id);
             if (el) el.remove();
             alert(data.message);
+            location.reload();
         } else {
             alert(data.message || 'Erro ao excluir.');
         }
     } catch (err) {
-        console.error(err);
-        alert('Erro ao excluir funcionário.');
+        console.error('Erro:', err);
+        alert('Erro ao excluir funcionário: ' + err.message);
     }
 }
 function openEditModal(id) {
@@ -126,17 +145,32 @@ async function submitEditModal(event) {
     if (!nome || !email || !telefone) { errEl.textContent = 'Preencha todos os campos.'; errEl.style.display = 'block'; return; }
 
     try {
-        const body = new URLSearchParams();
-        body.append('id', id);
-        body.append('nome', nome);
-        body.append('email', email);
-        body.append('telefone', telefone);
+        const formData = new FormData();
+        formData.append('id', id);
+        formData.append('nome', nome);
+        formData.append('email', email);
+        formData.append('telefone', telefone);
 
-        const res = await fetch('/dashboard-manager/controllers/EmployeeEdit.php', {
+        const res = await fetch('../../../controllers/EmployeeEdit.php', {
             method: 'POST',
-            body
+            body: formData,
+            credentials: 'include'
         });
-        const data = await res.json();
+        
+        const responseText = await res.text();
+        console.log('Edit response status:', res.status);
+        console.log('Edit response body:', responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Failed to parse JSON:', e);
+            errEl.textContent = 'Erro ao processar resposta: ' + responseText.substring(0, 100);
+            errEl.style.display = 'block';
+            return;
+        }
+        
         if (data.success) {
             const row = document.getElementById('employee-row-' + id);
             row.querySelector('.emp-name').textContent = data.data.nome;
@@ -144,13 +178,14 @@ async function submitEditModal(event) {
             row.querySelector('.emp-phone').textContent = data.data.telefone;
             closeEditModal();
             alert(data.message);
+            location.reload();
         } else {
             errEl.textContent = data.message || 'Erro ao atualizar.';
             errEl.style.display = 'block';
         }
     } catch (err) {
-        console.error(err);
-        errEl.textContent = 'Erro ao atualizar funcionário.';
+        console.error('Erro ao atualizar:', err);
+        errEl.textContent = 'Erro ao atualizar funcionário: ' + err.message;
         errEl.style.display = 'block';
     }
 }

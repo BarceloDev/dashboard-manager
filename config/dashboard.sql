@@ -22,13 +22,14 @@ CREATE TABLE IF NOT EXISTS notesRegister (
     vendedor VARCHAR(100) NOT NULL,
     cliente VARCHAR(100) NOT NULL,
     produto VARCHAR(100) NOT NULL,
-    price DECIMAL(6, 2) NOT NULL
+    price DECIMAL(6, 2) NOT NULL,
+    enterpriseName VARCHAR(100) NOT NULL
 );
 
-INSERT INTO notesRegister (vendedor, cliente, produto, price) VALUES
-('Alice', 'Cliente1', 'Produto X', 150.00),
-('Bob', 'Cliente2', 'Produto Y', 200.50),
-('Charlie', 'Cliente3', 'Produto Z', 300.75);
+INSERT INTO notesRegister (vendedor, cliente, produto, price, enterpriseName) VALUES
+('Eduardo', 'Cliente1', 'Produto X', 150.00, 'Teste1'),
+('Fernanda', 'Cliente2', 'Produto Y', 200.50, 'Teste1'),
+('Gabriel', 'Cliente3', 'Produto Z', 300.75, 'Teste1');
 
 INSERT INTO employeeRegister (nome, email, senha, telefone, enterpriseName) VALUES 
 ('Eduardo', 'eduardo@empresa.com', 'senha123', '1234567890', 'Teste1'),

@@ -1,4 +1,16 @@
 <?php
+// Configurações de sessão (apenas se sessão não estiver ativa)
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'enterprise');
 define('DB_USER', 'root');

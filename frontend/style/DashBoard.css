@@ -30,6 +30,9 @@
   border-radius: 10px;
   background-color: #e8f0fe;
   display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 5px;
 }
 
@@ -47,4 +50,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.title-back {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
 }

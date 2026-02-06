@@ -39,20 +39,38 @@ class DashBoard
         return $stats;
     }
 
-    // Retorna todas as vendas registradas em notesRegister
-    public function getSales()
+    // Retorna todas as vendas registradas em notesRegister filtradas pela empresa
+    public function getSales($enterpriseName = null)
     {
-        $query = "SELECT id, vendedor, cliente, produto, price FROM notesRegister";
+        if (empty($enterpriseName)) {
+            return [];
+        }
+
+        $query = "SELECT n.id, n.vendedor, n.cliente, n.produto, n.price
+                  FROM notesRegister n
+                  INNER JOIN employeeRegister e ON n.vendedor = e.nome
+                  WHERE e.enterpriseName = :enterpriseName";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':enterpriseName', $enterpriseName);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Retorna o lucro total (soma da coluna price) das vendas
-    public function getTotalProfit()
+    public function getTotalProfit($enterpriseName = null)
     {
-        $query = "SELECT COALESCE(SUM(price), 0) as total_profit FROM notesRegister";
+        if (empty($enterpriseName)) {
+            return 0.0;
+        }
+
+        $query = "SELECT COALESCE(SUM(n.price), 0) as total_profit
+                  FROM notesRegister n
+                  INNER JOIN employeeRegister e ON n.vendedor = e.nome
+                  WHERE e.enterpriseName = :enterpriseName";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':enterpriseName', $enterpriseName);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return isset($row['total_profit']) ? (float) $row['total_profit'] : 0.0;
@@ -82,12 +100,21 @@ class DashBoard
 
 // Se o arquivo for acessado diretamente pelo navegador, renderiza a página com os cards
 if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
+    session_start();
     // $pdo é definido em connection.php
     $dashboard = new DashBoard($pdo);
-    $sales = $dashboard->getSales();
+
+    $enterpriseName = $_SESSION['usuario_nome'] ?? null;
+
+    if (empty($enterpriseName)) {
+        $sales = [];
+        $totalProfit = 0.0;
+    } else {
+        $sales = $dashboard->getSales($enterpriseName);
+        $totalProfit = $dashboard->getTotalProfit($enterpriseName);
+    }
 
     $cardsHtml = $dashboard->renderSalesCards($sales);
-    $totalProfit = $dashboard->getTotalProfit();
     $totalFormatted = number_format($totalProfit, 2, ',', '.');
 
     ?>
@@ -108,7 +135,10 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
     <div class="container">
         <div class="box">
             <div class="title">
-                <h2>Vendas Registradas</h2>
+                <div class="title-back">
+                    <a href="../EnterpriseScreen.html"><i class="bi bi-arrow-left"></i></a>
+                    <h2>Vendas Registradas</h2>
+                </div>
                 <h4>Lucro total: R$ <?php echo $totalFormatted; ?></h4>
             </div>
             <div class="line"></div>

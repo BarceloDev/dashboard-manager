@@ -1,62 +1,56 @@
 <?php
 require_once __DIR__ . '/../config/connection.php';
-session_start();
-header('Content-Type: application/json');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Método inválido.']);
-    exit;
+    exit(json_encode(['success' => false, 'message' => 'Método inválido']));
 }
 
-$id = intval($_POST['id'] ?? 0);
-if ($id <= 0) {
+$id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+
+if (!$id) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'ID inválido.']);
-    exit;
+    exit(json_encode(['success' => false, 'message' => 'ID inválido']));
 }
 
 if (!isset($_SESSION['usuario_id'])) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Não autorizado.']);
-    exit;
+    exit(json_encode(['success' => false, 'message' => 'Não autenticado']));
 }
 
 try {
-    // Recupera o nome da empresa a partir do usuário logado
     $stmt = $pdo->prepare('SELECT nome FROM enterpriseRegister WHERE id = ?');
     $stmt->execute([$_SESSION['usuario_id']]);
-    $enterprise = $stmt->fetch();
-
-    if (!$enterprise) {
+    $empresa = $stmt->fetch();
+    
+    if (!$empresa) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Empresa não encontrada.']);
-        exit;
+        exit(json_encode(['success' => false, 'message' => 'Empresa não encontrada']));
     }
-
-    $enterpriseName = $enterprise['nome'];
-
-    // Verifica que o funcionário pertence à empresa
+    
+    $enterpriseName = $empresa['nome'];
+    
     $stmt = $pdo->prepare('SELECT id FROM employeeRegister WHERE id = ? AND enterpriseName = ?');
     $stmt->execute([$id, $enterpriseName]);
-    $employee = $stmt->fetch();
-
-    if (!$employee) {
+    
+    if (!$stmt->fetch()) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Funcionário não encontrado para esta empresa.']);
-        exit;
+        exit(json_encode(['success' => false, 'message' => 'Funcionário não encontrado']));
     }
-
-    // Exclui o funcionário
+    
     $stmt = $pdo->prepare('DELETE FROM employeeRegister WHERE id = ?');
     $stmt->execute([$id]);
-
-    echo json_encode(['success' => true, 'message' => 'Funcionário removido com sucesso.']);
-    exit;
-
-} catch (PDOException $e) {
-    error_log('Erro ao excluir funcionário: ' . $e->getMessage());
+    
+    http_response_code(200);
+    exit(json_encode(['success' => true, 'message' => 'Funcionário removido com sucesso']));
+    
+} catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Erro ao excluir funcionário.']);
-    exit;
+    exit(json_encode(['success' => false, 'message' => 'Erro: ' . $e->getMessage()]));
 }

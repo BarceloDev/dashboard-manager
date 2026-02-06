@@ -39,7 +39,7 @@ registerForm.addEventListener("submit", async (event) => {
       errorMessageDiv.textContent = result.message;
       errorMessageDiv.className = "errorMessage success";
       setTimeout(() => {
-        window.location.href = "/dashboard-manager/index.html";
+        window.location.href = "../../index.html";
       }, 1500);
     } else {
       errorMessageDiv.textContent = result.message;
