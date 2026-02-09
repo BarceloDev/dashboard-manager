@@ -46,3 +46,13 @@ html {
   color: #155724;
   border: 1px solid #c3e6cb;
 }
+
+
+.back {
+  cursor: pointer;
+  color: #fff;
+  background-color: rgb(146, 146, 146);
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+}
